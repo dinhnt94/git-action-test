@@ -1,0 +1,112 @@
+name: Deploy Test
+
+on: repository_dispatch
+
+jobs:
+  deploy_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set environment for branch
+        run: |
+          NAMESPACE=${github.event.client_payload.namespace}
+          if [[ -n "${NAMESPACE}"" ]]; then
+            echo "No namespace..."
+            exit 1
+          fi
+          PROJECT=${github.event.client_payload.job}
+          if [[ -n "${PROJECT}"" ]]; then
+            echo "No project..."
+            exit 1
+          fi
+
+          echo "NAMESPACE=$NAMESPACE"
+          echo "PROJECT=$PROJECT"
+          case ${NAMESPACE} in
+            bsc-test)
+              GKE_LOCATION=asia-southeast1-b
+              GKE_NAMESPACE=bsc-test
+              services=(
+                "api"
+                "blockchain"
+                "data-blockchain"
+                "data-blockchain-subscriber"
+                "signature-backend"
+                "voting-backend"
+              )
+              ;;
+            bsc-sa-test)
+              GKE_LOCATION=southamerica-east1-b
+              GKE_NAMESPACE=bsc-test
+              services=(
+                "blockchain"
+                "data-blockchain"
+              )
+              ;;
+            polygon-test)
+              GKE_LOCATION=asia-southeast1-b
+              GKE_NAMESPACE=polygon-test
+              services=(
+                "api"
+                "blockchain"
+                "data-blockchain"
+                "data-blockchain-subscriber"
+                "signature-backend"
+              )
+              ;;
+            *)
+              echo "Invalid branch, unexpected namespace"
+              exit 1
+              ;;
+          esac
+          if [[ ! " ${services[*]} " =~ " ${PROJECT} " ]]; then
+            echo "Invalid branch, unexpected api"
+            exit 1
+          fi
+          case ${PROJECT} in
+            api)
+              GKE_DEPLOYMENT=api
+              SRC_DIR=api
+              BUILD_CONFIG=cloudbuild-test.yaml
+              ;;
+            blockchain)
+              GKE_DEPLOYMENT=blockchain
+              SRC_DIR=blockchain
+              BUILD_CONFIG=cloudbuild-test.yaml
+              ;;
+            data-blockchain)
+              GKE_DEPLOYMENT=data-blockchain
+              SRC_DIR=data-blockchain
+              BUILD_CONFIG=cloudbuild-api-test.yaml
+              ;;
+            data-blockchain-subscriber)
+              GKE_DEPLOYMENT=data-blockchain-subscriber
+              SRC_DIR=data-blockchain
+              BUILD_CONFIG=cloudbuild-subscriber-test.yaml
+              ;;
+            signature-backend)
+              GKE_DEPLOYMENT=signature-backend
+              SRC_DIR=signature-service
+              BUILD_CONFIG=cloudbuild-test.yaml
+              ;;
+            voting-backend)
+              GKE_DEPLOYMENT=voting-backend
+              SRC_DIR=voting
+              BUILD_CONFIG=cloudbuild-test.yaml
+              ;;
+            *)
+              echo "Invalid branch, not supported api"
+              exit 1
+              ;;
+          esac
+          echo "GKE_LOCATION=$GKE_LOCATION"
+          echo "GKE_NAMESPACE=$GKE_NAMESPACE"
+          echo "GKE_DEPLOYMENT=$GKE_DEPLOYMENT"
+          echo "SRC_DIR=$SRC_DIR"
+          echo "BUILD_CONFIG=$BUILD_CONFIG"
+
+          echo "GKE_LOCATION=$GKE_LOCATION" >> $GITHUB_ENV
+          echo "GKE_NAMESPACE=$GKE_NAMESPACE" >> $GITHUB_ENV
+          echo "GKE_DEPLOYMENT=$GKE_DEPLOYMENT" >> $GITHUB_ENV
+          echo "SRC_DIR=$SRC_DIR" >> $GITHUB_ENV
+          echo "BUILD_CONFIG=$BUILD_CONFIG" >> $GITHUB_ENV
