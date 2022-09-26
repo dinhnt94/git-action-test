@@ -9,12 +9,12 @@ jobs:
     steps:
       - name: Set environment for branch
         run: |
-          NAMESPACE=${github.event.client_payload.namespace}
+          NAMESPACE=${{github.event.client_payload.namespace}}
           if [[ -n "${NAMESPACE}"" ]]; then
             echo "No namespace..."
             exit 1
           fi
-          PROJECT=${github.event.client_payload.job}
+          PROJECT=${{github.event.client_payload.job}}
           if [[ -n "${PROJECT}"" ]]; then
             echo "No project..."
             exit 1

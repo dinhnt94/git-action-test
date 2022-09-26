@@ -64,7 +64,7 @@ function fail {
 ##
 function require_env_var {
     local ENV_VAR=$1
-    if [[ -z "${!ENV_VAR}" ]]; then
+    if [[ -z "${ENV_VAR}" ]]; then
         fail "$ENV_VAR is not set"
     fi  
 }
@@ -149,7 +149,7 @@ function trigger_build {
     {
         "event_type": "build-${PROJECT_NAME}",
         "client_payload": {
-            "job": "${PROJECT_NAME}",
+            "job": "$3",
             "namespace": "${PROJECT_NAME}"
         }
     }
