@@ -14,14 +14,14 @@ jobs:
             echo "No namespace..."
             exit 1
           fi
-          PROJECT=${{github.event.client_payload.job}}
-          if [[ -z "${PROJECT}" ]]; then
-            echo "No project..."
+          SERVICE=${{github.event.client_payload.job}}
+          if [[ -z "${SERVICE}" ]]; then
+            echo "No service..."
             exit 1
           fi
 
           echo "NAMESPACE=$NAMESPACE"
-          echo "PROJECT=$PROJECT"
+          echo "SERVICE=$SERVICE"
           case ${NAMESPACE} in
             bsc-test)
               GKE_LOCATION=asia-southeast1-b
@@ -59,11 +59,11 @@ jobs:
               exit 1
               ;;
           esac
-          if [[ ! " ${services[*]} " =~ " ${PROJECT} " ]]; then
+          if [[ ! " ${services[*]} " =~ " ${SERVICE} " ]]; then
             echo "Invalid branch, unexpected api"
             exit 1
           fi
-          case ${PROJECT} in
+          case ${SERVICE} in
             api)
               GKE_DEPLOYMENT=api
               SRC_DIR=api
