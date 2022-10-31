@@ -12,6 +12,26 @@ require('dotenv').config();
 const app = express();
 let conversationId = '';
 
+const configWatching = {
+  sen: {
+    network: "bsc",
+  },
+  bcoin: {
+    network: "bsc",
+
+  },
+  bomb: {
+    network: "polygon",
+  }
+};
+
+const nwExplorer = {
+  bsc: process.env.isProduct ? "https://bscscan.com/address/" : "https://testnet.bscscan.com/address/",
+  polygon: process.env.isProduct ? "https://polygonscan.com/address/" : "https://mumbai.polygonscan.com/address/"
+}
+
+
+
 /*
  * Parse application/x-www-form-urlencoded && application/json
  * Use body-parser's `verify` callback to export a parsed raw body
@@ -72,9 +92,11 @@ app.post('/interactive', (req, res) => {
   }
 
   const body = JSON.parse(req.body.payload);
-  console.log(body)
+  console.log('body: ', body)
   res.send('');
-  ticket.create(body.user.id, body.view, conversationId);
+  console.log("view: ", body.view.state.values)
+  // ticket.create(body.user.id, body.view, conversationId);
+  ticket.gotMsgAndCreateReponse(Object.assign(configWatching, nwExplorer), body.view, conversationId);
 });
 
 const server = app.listen(process.env.PORT || 5000, () => {
