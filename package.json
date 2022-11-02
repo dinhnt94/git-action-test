@@ -13,8 +13,10 @@
   "dependencies": {
     "axios": "^0.18.1",
     "body-parser": "^1.17.1",
+    "date-and-time": "^2.4.1",
     "debug": "^3.1.0",
     "dotenv": "^4.0.0",
+    "ethers": "^5.7.2",
     "express": "^4.15.2",
     "tsscmp": "^1.0.6"
   },

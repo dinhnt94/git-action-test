@@ -2,51 +2,13 @@ const debug = require('debug')('slash-command-template:ticket');
 const api = require('./api');
 const payloads = require('./payloads');
 
-// interface IWatching {
-//   address: String;
-//   channel_id: Number;
-// }
-
-/*
- *  Send ticket creation confirmation via
- *  chat.postMessage to the user who created it
- */
-const sendConfirmation = async (ticket) => {
-  // open a DM channel for that user
-  console.log('ticket', ticket)
-  // let channel = await api.callAPIMethod('im.open', {
-  //   user: ticket.userId
-  // })
-
-  let message = payloads.confirmation({
-    channel_id: ticket.channel_id,
-    title: ticket.title,
-    description: ticket.description,
-    urgency: ticket.urgency
-  });
-
-  let result = await api.callAPIMethod('chat.postMessage', message)
-  debug('sendConfirmation: %o', result);
-};
-
-// Create helpdesk ticket. Call users.find to get the user's email address
-// from their user ID
-const create = async (userId, view, channel_id) => {
-  let values = view.state.values;
-
-  let result = await api.callAPIMethod('users.info', {
-    user: userId
-  });
-
-  await sendConfirmation({
-    userId,
-    userEmail: result.user.profile.email,
-    title: values.title_block.title.value,
-    description: values.description_block.description.value || '_empty_',
-    urgency: values.urgency_block.urgency.selected_option && values.urgency_block.urgency.selected_option.text.text || 'not assigned',
-    channel_id: channel_id
-  });
-};
+class ITicket {
+  get channel_id() { }
+  get pool() { }
+  get token() { }
+  get minAmount() { }
+  get url() { }
+}
 
 // module setup watching(user-call via command).
 const gotMsgAndCreateReponse = async (cf, view, channel_id) => {
@@ -70,7 +32,7 @@ const gotMsgAndCreateReponse = async (cf, view, channel_id) => {
   }
   return await sendWatching(info2)
 
-  // TODO: verify some thing here
+  // verify some thing here
   const isValid = true;
   const info = {
     channel_id: channel_id,
@@ -86,7 +48,10 @@ const gotMsgAndCreateReponse = async (cf, view, channel_id) => {
 };
 
 // msg warning pool got min-amount.
-/* @param {IWatching} ticket */
+/**
+ * 
+ * @param {ITicket} ticket 
+ */
 const sendWatching = async (ticket) => {
   // open a DM channel for that user
   console.log('sendWatching: ', ticket)
@@ -95,6 +60,7 @@ const sendWatching = async (ticket) => {
     channel_id: ticket.channel_id,
     pool: ticket.pool,
     url: ticket.url,
+    token: ticket.token,
     minAmount: ticket.minAmount
   });
 
@@ -103,6 +69,10 @@ const sendWatching = async (ticket) => {
 };
 
 // msg info reply owner setting.
+/**
+ * 
+ * @param {ITicket} ticket 
+ */
 const sendConfirm = async (ticket) => {
   // open a DM channel for that user
   console.log('sendConfirm: ', ticket)
@@ -114,6 +84,10 @@ const sendConfirm = async (ticket) => {
 };
 
 // msg info reply owner setting.
+/**
+ * 
+ * @param {ITicket} ticket 
+ */
 const sendReject = async (ticket) => {
   // open a DM channel for that user
   console.log('sendReject: ', ticket)
@@ -124,5 +98,20 @@ const sendReject = async (ticket) => {
   debug('sendConfirm: %o', result);
 };
 
+// msg info reply owner setting.
+/**
+ * 
+ * @param {*} ticket 
+ */
+const sendReplyList = async (ticket) => {
+  // open a DM channel for that user
+  console.log('sendReplyList: ', ticket)
 
-module.exports = { create, sendConfirmation, gotMsgAndCreateReponse };
+  let message = payloads.replyList(ticket);
+
+  let result = await api.callAPIMethod('chat.postMessage', message)
+  debug('sendReplyList: %o', result);
+};
+
+
+module.exports = { sendWatching, sendReplyList, sendConfirm, sendReject, gotMsgAndCreateReponse };
